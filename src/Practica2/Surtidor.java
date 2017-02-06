@@ -78,7 +78,7 @@ public class Surtidor extends JFrame {
 		getContentPane().add(lblGasCons);
 	}
 	
-	public boolean cambiaGas(int cantidad) {
+	synchronized public boolean cambiaGas(int cantidad) {
 		lblGas.setText(String.valueOf(Integer.parseInt(lblGas.getText())+cantidad));
 		if(Integer.parseInt(lblGas.getText())>=35000) {
 			lblGas.setText("35000");
