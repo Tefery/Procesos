@@ -15,11 +15,10 @@ public class ServidorHiloRecibir extends Thread {
     Socket conex;
     Scanner pedir = new Scanner(System.in);
     String nombreCliente, men;
-    ServidorHiloEnviar hilo;
 
-    ServidorHiloRecibir(Socket conex, ServidorHiloEnviar hilo) {
+    ServidorHiloRecibir(Socket conex) {
         this.conex = conex;
-        this.hilo = hilo;
+        this.setDaemon(true);
         start();
     }
 
@@ -47,7 +46,6 @@ public class ServidorHiloRecibir extends Thread {
 
         } catch (SocketException e) { // Ocurre si la salida del cliente se ha caido
             System.err.println("\n\tEl cliente " + nombreCliente + " se ha caido");
-            hilo.stop();
         } catch (IOException ex) {
             System.err.println("\n\tSe ha producido un error en la entrada de mensaje");
         } finally {

@@ -4,16 +4,13 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Scanner;
 
 public class ClienteWa {
 
     public static void main(String[] args) {
 
-        Scanner pedir = new Scanner(System.in);
         final int puerto = 50000;
         final String nombreServior = "ELENA";
-        String men, nombreCliente;
 
         try {
 
@@ -26,7 +23,7 @@ public class ClienteWa {
             
         } catch (ConnectException e){
             System.err.println("\n\tEl puerto al que quiere acceder está ocupado o no hay ningún programa escuchando");
-        } catch ( UnknownHostException e){    
+        } catch (UnknownHostException e){    
             System.err.println("\n\tNo existe la red con este nombre");
         } catch (IOException ex) {
             System.err.println("\n\tSe ha producido un error al enviar o recibir mensajes");
