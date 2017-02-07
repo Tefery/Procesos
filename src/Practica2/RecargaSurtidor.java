@@ -39,10 +39,14 @@ public class RecargaSurtidor extends JFrame {
 		});
 		btnRecarga.setBounds(411, 10, 106, 23);
 		getContentPane().add(btnRecarga);
+		setSize(s.getSize().width,70);
+		setLocation(s.getLocation().y,s.getLocation().x+s.getSize().height);
+		btnRecarga.setEnabled(false);
+		textFieldRecarga.setEnabled(false);
 	}
 	
 	public void cambiaVis() {
-		if(Integer.parseInt(s.lblGas.getText())>=35000) {
+		if(s.gas>=35000) {
 			btnRecarga.setEnabled(false);
 			textFieldRecarga.setEnabled(false);
 		} else {
@@ -52,6 +56,12 @@ public class RecargaSurtidor extends JFrame {
 	}
 	
 	private void recarga() {
-		s.cambiaGas(Integer.parseInt(textFieldRecarga.getText()));
+		try {
+		int cantidad = Integer.parseInt(textFieldRecarga.getText());
+		s.aniadeGas(cantidad);
+		} catch (NumberFormatException ex) {
+			textFieldRecarga.setText("");
+			cambiaVis();
+		}
 	}
 }
