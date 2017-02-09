@@ -51,7 +51,7 @@ public class ClienteHiloRecibir extends Thread {
             try {
                 entrada.close();
             } catch (IOException ex) {
-                Logger.getLogger(HiloS4.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Hilo.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 

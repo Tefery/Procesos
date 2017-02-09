@@ -9,12 +9,12 @@ import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class HiloS4 extends Thread {
+public class Hilo extends Thread {
 
     Socket conexCliente;
     String nombreCliente;
 
-    HiloS4(Socket conx) {
+    Hilo(Socket conx) {
         conexCliente = conx;
         start();
     }
@@ -50,7 +50,7 @@ public class HiloS4 extends Thread {
             try {
                 entrada.close();
             } catch (IOException ex) {
-                Logger.getLogger(HiloS4.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Hilo.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
