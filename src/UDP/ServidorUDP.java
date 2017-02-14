@@ -1,4 +1,4 @@
-package Whatsapp;
+package UDP;
 
 import java.io.IOException;
 import java.net.BindException;
@@ -8,22 +8,26 @@ import java.net.SocketException;
 
 public class ServidorUDP {
 	public static void main(String[] args) {
+		String mensaje;
 		try {
 			DatagramSocket conexCliente = new DatagramSocket(50000);
 			DatagramPacket paqueteRecibido;
-			byte[] mensaje = new byte[1024];
-			paqueteRecibido = new DatagramPacket(mensaje, mensaje.length);
+			byte[] mensaj = new byte[1024];
+			paqueteRecibido = new DatagramPacket(mensaj, mensaj.length);
 			System.out.println("Esperando el paquete");
 			conexCliente.receive(paqueteRecibido);
 			System.out.println("paquete recibido");
-			System.out.println("Mensaje: "+ new String(paqueteRecibido.getData()));
+			mensaje = new String(paqueteRecibido.getData());
+			System.out.println("Mensaje: "+ mensaje);
 			System.out.println("Tamaño del mensaje es: "+paqueteRecibido.getLength());
 			System.out.println("El remitente es: "+paqueteRecibido.getAddress().getHostName()+":"+paqueteRecibido.getPort());
-			while(true){
-				
+			while(!mensaje.equals("*")){
+				conexCliente.receive(paqueteRecibido);
+				mensaje = new String(paqueteRecibido.getData());
+				System.out.println(mensaje);
 			}
 			
-			//conexCliente.close();
+			conexCliente.close();
 		} catch (BindException e) {
 			System.err.println("El puerto indicado ya está siendo utilizado");
 		} catch (SocketException e) {

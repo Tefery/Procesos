@@ -1,4 +1,4 @@
-package Whatsapp;
+package UDP;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -10,21 +10,20 @@ import java.util.Scanner;
 
 public class ClienteUDP {
 	public static void main(String[] args) {
-		final String SERVIDOR = "localhost";
+		final String SERVIDOR = "elena";
 		final int PUERTO = 51000;
 		try {
 			
 			InetAddress infoServidor = InetAddress.getByName(SERVIDOR);
 			DatagramSocket conexServ = new DatagramSocket(PUERTO);
-			
+			String mensaje = "";
 			Scanner in = new Scanner(System.in);
+			while(!mensaje.equals("*")) {
 			System.out.print("Mensaje: ");
-			String mensaje = in.nextLine();
-			System.out.println();
-
+			mensaje = in.nextLine();
 			DatagramPacket paquete = new DatagramPacket(mensaje.getBytes(), mensaje.getBytes().length, infoServidor,50000);
 			conexServ.send(paquete);
-			
+			}
 			conexServ.close();
 		} catch (UnknownHostException e) {
 			System.err.println("No hay ningun ordenador en la red con ese nombre");
