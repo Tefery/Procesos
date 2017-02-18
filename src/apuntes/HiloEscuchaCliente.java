@@ -1,4 +1,4 @@
-package Practica3;
+package apuntes;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,4 +30,5 @@ public class HiloEscuchaCliente extends Thread {
 			e.printStackTrace();
 		}
 	}
+	
 }

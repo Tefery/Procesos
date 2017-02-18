@@ -1,4 +1,4 @@
-package Practica3;
+package apuntes;
 
 import java.io.IOException;
 import java.io.PrintStream;
