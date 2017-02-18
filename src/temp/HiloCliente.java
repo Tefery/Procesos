@@ -1,4 +1,4 @@
-package Practica3;
+package temp;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -10,22 +10,16 @@ public class HiloCliente{
 	private String nombre;
 	private PrintStream salida;
 	
-	public HiloCliente(String nombre, Socket conexion) {
+	public HiloCliente(String nombre, Socket conexion) throws IOException {
 		this.nombre = nombre;
 		this.conexion = conexion;
-
-		try {
-			salida = new PrintStream(this.conexion.getOutputStream());
-		} catch (IOException e) {
-			System.err.println("El Socket no tiene un formato correcto");
-			e.printStackTrace();
-		}
+		salida = new PrintStream(this.conexion.getOutputStream());
+		
 	}
 	
 	public void enviaMensaje(String mensaje) {
 		
-		salida.println(nombre);
-		salida.println(mensaje);
+		salida.println(nombre+": "+mensaje);
 		
 	}
 	
@@ -36,5 +30,9 @@ public class HiloCliente{
 			System.err.println("Ha ocurrido un error al cerrar la conexión");
 			e.printStackTrace();
 		}
+	}
+	
+	public void setNombre(String nombre) {
+		this.nombre = nombre;
 	}
 }
