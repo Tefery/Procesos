@@ -24,7 +24,7 @@ public class ServidorUDP {
 						System.out.println(mensaje);
 					} else if (mensaje.startsWith("n:")) {
 						mensaje = mensaje.substring(2);
-						System.out.println(mensaje.substring(0, 20).trim() + " " + mensaje.substring(20).trim());
+						System.out.println(mensaje.trim()+", "+paqueteRecibido.getAddress());
 					} else if (mensaje.startsWith("x:")) {
 						mensaje = mensaje.substring(2);
 						System.out.println(mensaje.trim() + " ha cerrado");

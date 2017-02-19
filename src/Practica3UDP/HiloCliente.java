@@ -32,7 +32,7 @@ public class HiloCliente extends Thread {
 						clienteUI.addTexto(mensaje);
 					} else if (mensaje.startsWith("n:")) {
 						mensaje = mensaje.substring(2);
-						clienteUI.cambiaNombre(mensaje.substring(20).trim(), mensaje.substring(0, 20).trim());
+						clienteUI.cambiaNombre(mensaje.trim(), paquete.getAddress().toString());
 					} else if (mensaje.startsWith("x:")) {
 						mensaje = mensaje.substring(2);
 						clienteUI.cambiaNombre(mensaje.trim(), null);
