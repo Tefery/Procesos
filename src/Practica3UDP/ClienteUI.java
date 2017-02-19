@@ -1,20 +1,21 @@
-package Practica3;
+package Practica3UDP;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.ConnectException;
-import java.net.Socket;
+import java.net.BindException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -31,22 +32,11 @@ public class ClienteUI extends JFrame {
 
 	public ClienteUI() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				abierto = false;
-				try {
-					if (conexion != null)
-						conexion.close();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-			}
-		});
 
 		abierto = true;
-
 		nombre = "Anonimo";
+		conectados = new HashMap<String, String>();
+		conectar();
 
 		setTitle("Chat 3000 - Desconectado");
 		setSize(558, 515);
@@ -55,48 +45,12 @@ public class ClienteUI extends JFrame {
 		getContentPane().add(panelPrincipal, BorderLayout.CENTER);
 		panelPrincipal.setLayout(new BorderLayout(0, 0));
 
-		JPanel panelBotones = new JPanel();
-		panelPrincipal.add(panelBotones, BorderLayout.NORTH);
-		panelBotones.setLayout(new BorderLayout(0, 0));
-
-		JLabel lblDireccionHost = new JLabel("Direccion del host:");
-		panelBotones.add(lblDireccionHost, BorderLayout.WEST);
-
-		JButton btnConectar = new JButton("Conectar");
-		btnConectar.setFocusable(false);
-		btnConectar.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				conectar();
-			}
-		});
-		panelBotones.add(btnConectar, BorderLayout.EAST);
-
-		textFieldHost = new JTextField();
-		textFieldHost.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyTyped(KeyEvent e) {
-				if (textFieldHost.getText().length() < 29 || e.getKeyCode() == 10) {
-				} else {
-					e.setKeyChar('\0');
-				}
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e) {
-				if (e.getKeyCode() == 10)
-					conectar();
-			}
-		});
-		panelBotones.add(textFieldHost, BorderLayout.CENTER);
-		textFieldHost.setColumns(10);
-
 		JPanel panelMensajes = new JPanel();
 		panelPrincipal.add(panelMensajes, BorderLayout.CENTER);
 		panelMensajes.setLayout(new BorderLayout(0, 0));
 
 		areaMensajes = new JTextArea();
 		areaMensajes.setFocusable(false);
-		areaMensajes.setEnabled(false);
 		areaMensajes.setEditable(false);
 
 		JScrollPane scrollMensajes = new JScrollPane(areaMensajes);
@@ -123,13 +77,11 @@ public class ClienteUI extends JFrame {
 					enviaMensaje();
 			}
 		});
-		textFieldMensaje.setEnabled(false);
 		panelTexto.add(textFieldMensaje, BorderLayout.CENTER);
 		textFieldMensaje.setColumns(10);
 
 		btnEnviarMensaje = new JButton("Enviar");
 		btnEnviarMensaje.setFocusable(false);
-		btnEnviarMensaje.setEnabled(false);
 		btnEnviarMensaje.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				enviaMensaje();
@@ -150,7 +102,6 @@ public class ClienteUI extends JFrame {
 		panelNombre.setLayout(new BorderLayout(0, 0));
 
 		lblNombre = new JLabel("Nombre");
-		lblNombre.setEnabled(false);
 		lblNombre.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNombre.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 11));
 		panelNombre.add(lblNombre, BorderLayout.NORTH);
@@ -173,13 +124,11 @@ public class ClienteUI extends JFrame {
 					cambiaNombre();
 			}
 		});
-		textFieldNombre.setEnabled(false);
 		panelNombre.add(textFieldNombre, BorderLayout.CENTER);
 		textFieldNombre.setColumns(10);
 
 		btnCambiarNombre = new JButton("Cambiar Nombre");
 		btnCambiarNombre.setFocusable(false);
-		btnCambiarNombre.setEnabled(false);
 		btnCambiarNombre.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				cambiaNombre();
@@ -190,7 +139,6 @@ public class ClienteUI extends JFrame {
 		areaConectados = new JTextArea();
 		areaConectados.setMargin(new Insets(10, 5, 10, 5));
 		areaConectados.setFocusable(false);
-		areaConectados.setEnabled(false);
 		areaConectados.setEditable(false);
 
 		JScrollPane scrollConectados = new JScrollPane(areaConectados);
@@ -200,67 +148,39 @@ public class ClienteUI extends JFrame {
 
 	}
 
+	private void conectar() {
+		try {
+			conexion = new DatagramSocket(PUERTO);
+			byte[] mensaj = new byte[64];
+			paquete = new DatagramPacket(mensaj, mensaj.length);
+
+		} catch (BindException e) {
+			mensajeDeError("ERROR: El puerto " + PUERTO + " está ocupado por otra aplicación");
+			System.exit(0);
+		} catch (SocketException e1) {
+			mensajeDeError("ERROR: No ha sido posible establecer la conexión, reinicie la aplicación");
+			System.exit(0);
+		}
+	}
+
 	private static final long serialVersionUID = 1L;
 	private static final int PUERTO = 39876;
 
+	public boolean abierto;
+	private HiloCliente hiloLector;
+	private DatagramSocket conexion;
+	private DatagramPacket paquete;
+	private String nombre;
+	private HashMap<String, String> conectados;
+
 	private JTextField textFieldMensaje;
 	private JTextField textFieldNombre;
-	private Socket conexion;
-	public boolean abierto;
 	public JTextArea areaMensajes;
-	private JTextField textFieldHost;
 	private PrintStream salida;
-	private String nombre;
 	private JButton btnEnviarMensaje;
-
-	private HiloCliente hiloLector;
 	private JTextArea areaConectados;
 	private JButton btnCambiarNombre;
 	private JLabel lblNombre;
-
-	private void setEstamosconectados(boolean conectados) {
-		btnEnviarMensaje.setEnabled(conectados);
-		btnCambiarNombre.setEnabled(conectados);
-		areaConectados.setEnabled(conectados);
-		areaMensajes.setEnabled(conectados);
-		textFieldMensaje.setEnabled(conectados);
-		textFieldNombre.setEnabled(conectados);
-		lblNombre.setEnabled(conectados);
-	}
-
-	@SuppressWarnings("deprecation")
-	void conectar() {
-		String host = textFieldHost.getText();
-		if (host.isEmpty()) {
-			textFieldHost.setBackground(Color.RED);
-			textFieldHost.grabFocus();
-		} else {
-			textFieldHost.setBackground(Color.WHITE);
-			try {
-				if (conexion != null) {
-					hiloLector.stop();
-					conexion.close();
-				}
-				conexion = new Socket(host, PUERTO);
-				salida = new PrintStream(conexion.getOutputStream());
-				hiloLector = new HiloCliente(conexion, this);
-				setTitle("Chat 3000 - Conectado: " + host);
-				addTexto("Conexion establecida con " + host);
-				setEstamosconectados(true);
-				textFieldMensaje.grabFocus();
-			} catch (UnknownHostException e) {
-				mensajeDeError("El host indicado no existe");
-				textFieldHost.grabFocus();
-			} catch (ConnectException e) {
-				mensajeDeError("El host indicado no es un servidor valido");
-				textFieldHost.grabFocus();
-			} catch (IOException e) {
-				mensajeDeError("Ha ocurrido un error inesperado");
-				e.printStackTrace();
-				textFieldHost.grabFocus();
-			}
-		}
-	}
 
 	private void enviaMensaje() {
 		if (!textFieldMensaje.getText().isEmpty()) {
@@ -277,6 +197,22 @@ public class ClienteUI extends JFrame {
 		}
 	}
 
+	private void enviaPaquete(String mens) {
+		while(mens.getBytes().length <= 64) {
+			mens += " ";
+		}
+		mens = mens.substring(0,64);
+		DatagramPacket paquete;
+		try {
+			paquete = new DatagramPacket(mens.getBytes(), mens.getBytes().length, InetAddress.getByName("192.168.1.255"), PUERTO);
+			conexion.send(paquete);
+		} catch (UnknownHostException e1) {
+			e1.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	private void cambiaNombre() {
 		if (textFieldNombre.getText().isEmpty()) {
 			nombre = "Anonimo";
@@ -287,14 +223,22 @@ public class ClienteUI extends JFrame {
 		textFieldMensaje.grabFocus();
 	}
 
-	private void mensajeDeError(String mensaje) {
-		JOptionPane.showMessageDialog(null, mensaje, "Atención", 0);
+	public void cambiaNombre(String host, String nombre) {
+		if (nombre != null)
+			conectados.put(host, nombre);
+		else
+			conectados.remove(host);
+		listaConectados();
 	}
 
-	protected void servidorCaido(String mensaje) {
-		setTitle("Chat 3000 - Desconectado");
-		setEstamosconectados(false);
-		mensajeDeError(mensaje);
+	private void listaConectados() {
+		areaConectados.setText("");
+		for (String s : conectados.values())
+			areaConectados.append(s + "/n");
+	}
+
+	private void mensajeDeError(String mensaje) {
+		JOptionPane.showMessageDialog(null, mensaje, "Atención", 0);
 	}
 
 	public void addTexto(String texto) {

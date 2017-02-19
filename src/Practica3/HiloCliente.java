@@ -25,15 +25,25 @@ public class HiloCliente extends Thread {
 			String mensaje = "";
 			while (clienteUI.abierto && mensaje != null) {
 				mensaje = entrada.readLine();
-				if(mensaje == null)
+				if (mensaje == null)
 					break;
 				clienteUI.addTexto(mensaje);
 			}
 			conexion.close();
 		} catch (SocketException e) {
 			clienteUI.servidorCaido("El servidor ha cerrado de manera inesperada");
+			e.printStackTrace();
 		} catch (IOException e) {
 			clienteUI.servidorCaido("Ha ocurrido un error inesperado");
+		}
+	}
+
+	public void cerrar() {
+		try {
+			entrada.close();
+			conexion.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 }

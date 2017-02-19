@@ -42,12 +42,9 @@ public class HiloServidorEscucha extends Thread {
 				}
 			}
 			conexiones.remove(conexion);
-			conexion.close();
 		} catch (SocketException e) {
 			System.err.println("Un cliente ha cerrado la conexion de manera abrupta");
-			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
