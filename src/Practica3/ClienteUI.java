@@ -7,9 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.ConnectException;
 import java.net.Socket;
@@ -44,6 +42,8 @@ public class ClienteUI extends JFrame {
 		});
 
 		abierto = true;
+		
+		nombre = "Anonimo";
 
 		setTitle("Chat 3000 - Desconectado");
 		setSize(558, 515);
@@ -76,6 +76,7 @@ public class ClienteUI extends JFrame {
 		panelMensajes.setLayout(new BorderLayout(0, 0));
 
 		areaMensajes = new JTextArea();
+		areaMensajes.setEnabled(false);
 		areaMensajes.setEditable(false);
 
 		JScrollPane scrollMensajes = new JScrollPane(areaMensajes);
@@ -87,10 +88,11 @@ public class ClienteUI extends JFrame {
 		panelTexto.setLayout(new BorderLayout(0, 0));
 
 		textFieldMensaje = new JTextField();
+		textFieldMensaje.setEnabled(false);
 		panelTexto.add(textFieldMensaje, BorderLayout.CENTER);
 		textFieldMensaje.setColumns(10);
 
-		JButton btnEnviarMensaje = new JButton("Enviar");
+		btnEnviarMensaje = new JButton("Enviar");
 		btnEnviarMensaje.setEnabled(false);
 		btnEnviarMensaje.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -111,23 +113,34 @@ public class ClienteUI extends JFrame {
 		panel.add(panelNombre, BorderLayout.NORTH);
 		panelNombre.setLayout(new BorderLayout(0, 0));
 
-		JLabel lblNombre = new JLabel("Nombre");
+		lblNombre = new JLabel("Nombre");
+		lblNombre.setEnabled(false);
 		lblNombre.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNombre.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 11));
 		panelNombre.add(lblNombre, BorderLayout.NORTH);
 
 		textFieldNombre = new JTextField();
+		textFieldNombre.setEnabled(false);
 		panelNombre.add(textFieldNombre, BorderLayout.CENTER);
 		textFieldNombre.setColumns(10);
 
-		JButton btnCambiarNombre = new JButton("Cambiar Nombre");
+		btnCambiarNombre = new JButton("Cambiar Nombre");
+		btnCambiarNombre.setEnabled(false);
+		btnCambiarNombre.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				cambiaNombre();
+			}
+		});
 		panelNombre.add(btnCambiarNombre, BorderLayout.SOUTH);
 
-		JTextArea areaConectados = new JTextArea();
+		areaConectados = new JTextArea();
+		areaConectados.setEnabled(false);
 		areaConectados.setEditable(false);
 
 		JScrollPane scrollConectados = new JScrollPane(areaConectados);
 		panel.add(scrollConectados, BorderLayout.CENTER);
+		
+		setVisible(true);
 
 	}
 
@@ -136,65 +149,90 @@ public class ClienteUI extends JFrame {
 
 	private JTextField textFieldMensaje;
 	private JTextField textFieldNombre;
-	public Socket conexion;
+	private Socket conexion;
 	public boolean abierto;
-	private JTextArea areaMensajes;
+	public JTextArea areaMensajes;
 	private JTextField textFieldHost;
 	private PrintStream salida;
+	private String nombre;
+	private JButton btnEnviarMensaje;
+	
+	@SuppressWarnings("unused")
+	private HiloCliente hiloLector;
+	private JTextArea areaConectados;
+	private JButton btnCambiarNombre;
+	private JLabel lblNombre;
 
+	private void setEstamosconectados(boolean conectados) {
+		btnEnviarMensaje.setEnabled(conectados);
+		btnCambiarNombre.setEnabled(conectados);
+		areaConectados.setEnabled(conectados);
+		areaMensajes.setEnabled(conectados);
+		textFieldMensaje.setEnabled(conectados);
+		textFieldNombre.setEnabled(conectados);
+		lblNombre.setEnabled(conectados);
+	}
+	
 	void conectar() {
-		if (textFieldHost.getText().isEmpty()) {
+		String host = textFieldHost.getText();
+		if (host.isEmpty()) {
 			textFieldHost.setBackground(Color.RED);
 		} else {
 			textFieldHost.setBackground(Color.WHITE);
 			try {
 				if (conexion != null)
 					conexion.close();
-				conexion = new Socket(textFieldHost.getText(), PUERTO);
+				conexion = new Socket(host, PUERTO);
 				salida = new PrintStream(conexion.getOutputStream());
-				arrancarLector(textFieldHost.getText());
+				hiloLector = new HiloCliente(conexion,this);
+				setTitle("Chat 3000 - Conectado: "+host);
+				addTexto("Conexion establecida con " + host);
+				setEstamosconectados(true);
 			} catch (UnknownHostException e) {
-				JOptionPane.showMessageDialog(null, "El host indicado no existe", "Atención", 0);
+				mensajeDeError("El host indicado no existe");
 			} catch (ConnectException e) {
-				JOptionPane.showMessageDialog(null, "El host indicado no es un servidor valido", "Atención", 0);
+				mensajeDeError("El host indicado no es un servidor valido");
 			} catch (IOException e) {
-				JOptionPane.showMessageDialog(null, "Ha ocurrido un error inesperado", "Atención", 0);
+				mensajeDeError("Ha ocurrido un error inesperado");
 				e.printStackTrace();
 			}
 		}
 	}
 
-	void arrancarLector(String host) {
-		addTexto("Conexion establecida con " + host);
-		new Runnable() {
-			@Override
-			public void run() {
-				BufferedReader entrada;
-				try {
-					entrada = new BufferedReader(new InputStreamReader(conexion.getInputStream()));
-					String mensaje;
-					while (abierto) {
-						mensaje = entrada.readLine();
-						areaMensajes.append(mensaje);
-					}
-					conexion.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		};
-	}
-
 	private void enviaMensaje() {
 		if (!textFieldMensaje.getText().isEmpty()) {
+			try {
 			String mensaje = textFieldMensaje.getText();
 			textFieldMensaje.setText("");
-			salida.println(mensaje);
+			salida.println(nombre + ": " + mensaje);
 			addTexto(mensaje,true);
+			} catch (Exception e) {
+				e.printStackTrace();
+				btnEnviarMensaje.setEnabled(false);
+			}
 		}
 	}
 
-	private void addTexto(String texto) {
+	private void cambiaNombre() {
+		if(textFieldNombre.getText().isEmpty()) {
+			nombre = "Anonimo";
+		} else {
+			nombre = textFieldNombre.getText();
+		}
+		addTexto("Nombre cambiado a "+nombre, true);
+	}
+
+	private void mensajeDeError(String mensaje) {
+		JOptionPane.showMessageDialog(null, mensaje, "Atención", 0);
+	}
+	
+	protected void servidorCaido(String mensaje) {
+		setTitle("Chat 3000 - Desconectado");
+		setEstamosconectados(false);
+		mensajeDeError(mensaje);
+	}
+	
+	public void addTexto(String texto) {
 		addTexto(texto, false);
 	}
 
@@ -203,7 +241,6 @@ public class ClienteUI extends JFrame {
 	}
 	
 	public static void main(String[] args) {
-		ClienteUI cli = new ClienteUI();
-		cli.setVisible(true);
+		new ClienteUI();
 	}
 }
