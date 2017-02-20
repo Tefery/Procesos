@@ -1,4 +1,4 @@
-package apuntes;
+package Examen3;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,6 +22,7 @@ public class HiloEscuchaCliente extends Thread {
 			String mensaje = entrada.readLine();
 			while(mensaje != null) {
 				System.out.println(mensaje);
+				System.out.println("Inserte un mensaje: ");
 				mensaje = entrada.readLine();
 			}
 			entrada.close();

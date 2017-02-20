@@ -1,4 +1,4 @@
-package apuntes;
+package Examen3;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -52,7 +52,7 @@ public class HiloEscuchaServidor extends Thread {
 					if (s.equals(remitente)) {
 						try {
 							suSalida = new PrintStream(conexiones.get(remitente).getOutputStream(), true);
-							suSalida.println(nombre + ": " +mensaje);
+							suSalida.println(nombre + ": " + mensaje);
 							miSalida.println("el mensaje " + mensaje + " ha sido enviado a " + remitente);
 							hayRemitente = true;
 						} catch (IOException e) {
@@ -66,10 +66,12 @@ public class HiloEscuchaServidor extends Thread {
 				mensaje = entrada.readLine();
 			}
 			System.out.println(nombre + " se ha ido.");
+			conexiones.remove(nombre);
 		} catch (SocketException e) {
-			if (nombre != null)
+			if (nombre != null) {
 				System.err.println("Lo siento, " + nombre + " se ha ido. Ha cerrado MAL");
-			else
+				conexiones.remove(nombre);
+			} else
 				System.err
 						.println("Se ha conectado alguien, pero se ha ido antes de insertar su nombre. Ha cerrado MAL");
 		} catch (IOException e) {
