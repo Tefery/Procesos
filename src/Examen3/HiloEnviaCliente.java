@@ -3,7 +3,6 @@ package Examen3;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.Scanner;
 
 public class HiloEnviaCliente extends Thread {
@@ -34,14 +33,10 @@ public class HiloEnviaCliente extends Thread {
 				mensaje = in.nextLine();
 				salida.println(mensaje);
 			}
-			conexion.close();
 		} catch (IOException ex) {
 			System.err.println("Ha ocurrido un error inesperado en la clase HiloEnviaCliente");
 			ex.printStackTrace();
 		}
 
-	}
-	
-	private void pideString() {
 	}
 }

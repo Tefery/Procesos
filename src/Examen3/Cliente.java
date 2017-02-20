@@ -6,7 +6,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class Cliente {
-
 	public static void main(String[] args) {
 		final String NOM_SERVIDOR = "localhost";
 		final int PUERTO_ESC_SERVID = 2665;

@@ -2,7 +2,6 @@ package Examen3;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
@@ -66,6 +65,8 @@ public class HiloEscuchaServidor extends Thread {
 				mensaje = entrada.readLine();
 			}
 			System.out.println(nombre + " se ha ido.");
+                        miSalida.close();
+                        conexion.close();
 			conexiones.remove(nombre);
 		} catch (SocketException e) {
 			if (nombre != null) {

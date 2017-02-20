@@ -27,7 +27,7 @@ public class HiloEscuchaCliente extends Thread {
 			}
 			entrada.close();
 		} catch (SocketException e) {
-			System.out.println("El servidor ha cerrado. Se cierra la comunicación");
+                        System.out.println("El servidor ha cerrado. Se cierra la comunicación");
 		} catch (IOException e) {
 			System.err.println("Ha ocurrido un error inesperado en la clase HiloEscuchaCliente");
 			e.printStackTrace();
