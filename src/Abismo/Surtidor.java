@@ -1,4 +1,4 @@
-package Practica2;
+package Abismo;
 
 import java.awt.Insets;
 

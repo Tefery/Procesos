@@ -1,4 +1,4 @@
-package Whatsapp;
+package Abismo;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,14 +10,15 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class ClienteHiloRecibir extends Thread {
+public class ServidorHiloRecibir extends Thread {
 
     Socket conex;
     Scanner pedir = new Scanner(System.in);
     String nombreCliente, men;
 
-    ClienteHiloRecibir(Socket conex) {
+    ServidorHiloRecibir(Socket conex) {
         this.conex = conex;
+        this.setDaemon(true);
         start();
     }
 
