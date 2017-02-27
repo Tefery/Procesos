@@ -1,5 +1,8 @@
 package ftp;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketException;
@@ -25,17 +28,22 @@ public class ClienteFTP {
 				System.exit(0);
 			}
 			cliente.login("u750565235", "alumno");
-			//System.out.println(respuesta);
-			
+			System.out.println(respuesta);
 			cliente.enterLocalPassiveMode();
+			subeArchivo(cliente,"C:\\Users\\Tefery\\Desktop\\libreriasFTP\\jakarta-oro-2.0.1.jar","jakarta.jar");
+			cliente.deleteFile("jakarta.jar");
+			//cliente.changeWorkingDirectory("ojete");
 			
 			FTPFile[] listFiles = cliente.listFiles();
 			
 			//cliente.remoteAppend("C:\\Users\\Tefery\\Desktop\\jakarta-oro-2.0.1.jar");
-			System.out.println(respuesta);
 			
 			for(FTPFile f : listFiles) 
 				System.out.println(f.getName());
+			
+			System.out.println("Estoy en: "+cliente.printWorkingDirectory());
+			
+			//cliente.rename("manuel", "/public_html/manolo");
 			
 			System.out.println("Estoy en: "+cliente.printWorkingDirectory());
 		} catch (UnknownHostException e) {
@@ -48,4 +56,11 @@ public class ClienteFTP {
 			e.printStackTrace();
 		}
 	}
+
+	private static void subeArchivo(FTPClient cliente, String ubicacion, String nombre) throws FileNotFoundException, IOException {
+		BufferedInputStream archivo = new BufferedInputStream(new FileInputStream(ubicacion));
+		
+		cliente.storeFile(nombre, archivo);
+	}
+	
 }

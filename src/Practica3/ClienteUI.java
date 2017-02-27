@@ -302,7 +302,10 @@ public class ClienteUI extends JFrame {
 	}
 
 	private void addTexto(String texto, boolean soyYo) {
-		areaMensajes.append(texto + "\n");
+		if (!soyYo)
+			areaMensajes.append(texto + "\n");
+		else
+			areaMensajes.append("\t\t\t"+texto + "\n");
 	}
 
 	public static void main(String[] args) {

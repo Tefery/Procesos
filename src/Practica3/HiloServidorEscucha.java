@@ -12,12 +12,13 @@ public class HiloServidorEscucha extends Thread {
 
 	String mensaje;
 	Socket conexion;
+	ServidorUI ventana;
 	BufferedReader entrada;
 	ArrayList<Socket> conexiones;
 	PrintStream salida;
 
-	public HiloServidorEscucha(Socket conexion, ArrayList<Socket> conexiones) {
-
+	public HiloServidorEscucha(Socket conexion, ArrayList<Socket> conexiones, ServidorUI ventana) {
+		this.ventana = ventana;
 		this.conexion = conexion;
 		this.conexiones = conexiones;
 		mensaje = "";
@@ -34,6 +35,7 @@ public class HiloServidorEscucha extends Thread {
 				mensaje = entrada.readLine();
 				if (mensaje == null)
 					break;
+				ventana.addText(mensaje);
 				for (Socket s : conexiones) {
 					if (s != this.conexion) {
 						salida = new PrintStream(s.getOutputStream());
@@ -41,9 +43,11 @@ public class HiloServidorEscucha extends Thread {
 					}
 				}
 			}
+			ventana.addText("Se han desconectado desde "+conexion.getInetAddress());
 			conexiones.remove(conexion);
 		} catch (SocketException e) {
-			System.err.println("Un cliente ha cerrado la conexion de manera abrupta");
+			ventana.addText("El cliente desde "+conexion.getInetAddress()+" ha cerrado de manera abrupta");
+			conexiones.remove(conexion);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

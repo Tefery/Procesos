@@ -1,7 +1,6 @@
 package Practica3;
 
 import java.io.IOException;
-import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -13,29 +12,17 @@ public class Servidor extends Thread {
 	ServerSocket serv;
 	Socket conexion;
 	String mensaje;
+	ServidorUI ventana;
 	ArrayList<Socket> conexiones;
 
-	public Servidor(int puerto) throws IOException {
+	public Servidor(int puerto, ServidorUI ventana) throws IOException {
 		this.puerto = puerto;
+		this.ventana = ventana;
 		serv = new ServerSocket(puerto);
+		this.ventana.addText("Escuchando por el puerto "+puerto);
 		mensaje = "";
 		abierto = true;
 		conexiones = new ArrayList<>();
-	}
-
-	public static void main(String[] args) {
-		final int puerto = 39876;
-		Servidor serv;
-		try {
-			serv = new Servidor(puerto);
-			serv.start();
-		} catch (BindException e) {
-			System.err.println("El puerto " + puerto + " ya está en uso por otra aplicación");
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
 	}
 
 	@Override
@@ -44,7 +31,8 @@ public class Servidor extends Thread {
 			while (abierto) {
 				conexion = serv.accept();
 				conexiones.add(conexion);
-				new HiloServidorEscucha(conexion, conexiones);
+				ventana.addText("Se han conectado desde "+conexion.getInetAddress());
+				new HiloServidorEscucha(conexion, conexiones, ventana);
 			}
 			serv.close();
 		} catch (IOException e) {

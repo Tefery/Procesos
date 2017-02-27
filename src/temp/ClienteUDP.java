@@ -47,7 +47,7 @@ public class ClienteUDP {
 		}
 	}
 
-	public static String GenerateBroadcastMask(String addr) {
+private static String GenerateBroadcastMask(String addr) {
 		
 		// revisa si la broadcast mask ya esta definida
 

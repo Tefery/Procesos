@@ -8,7 +8,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.BindException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -33,12 +32,17 @@ public class ClienteUI extends JFrame {
 	public ClienteUI() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+		try {
+			infoServidor = InetAddress.getByName(broadcastMask);
+		} catch (UnknownHostException e1) {
+			e1.printStackTrace();
+		}
 		abierto = true;
 		nombre = "Anonimo";
 		conectados = new HashMap<String, String>();
 		conectar();
 
-		setTitle("Chat 3000 - Desconectado");
+		setTitle("Chat 3000 - Conectado");
 		setSize(558, 515);
 
 		JPanel panelPrincipal = new JPanel();
@@ -153,18 +157,22 @@ public class ClienteUI extends JFrame {
 			conexion = new DatagramSocket(PUERTO);
 			byte[] mensaj = new byte[64];
 			paquete = new DatagramPacket(mensaj, mensaj.length);
-
+			hiloLector = new HiloCliente(conexion, paquete, this, InetAddress.getLocalHost().getHostAddress());
 		} catch (BindException e) {
-			mensajeDeError("ERROR: El puerto " + PUERTO + " está ocupado por otra aplicación");
+			mensajeDeError("La aplicación ya está en ejecución");
 			System.exit(0);
 		} catch (SocketException e1) {
 			mensajeDeError("ERROR: No ha sido posible establecer la conexión, reinicie la aplicación");
 			System.exit(0);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
 	private static final long serialVersionUID = 1L;
 	private static final int PUERTO = 39876;
+	private String broadcastMask = "255.255.255.255";
+	private InetAddress infoServidor;
 
 	public boolean abierto;
 	private HiloCliente hiloLector;
@@ -176,7 +184,6 @@ public class ClienteUI extends JFrame {
 	private JTextField textFieldMensaje;
 	private JTextField textFieldNombre;
 	public JTextArea areaMensajes;
-	private PrintStream salida;
 	private JButton btnEnviarMensaje;
 	private JTextArea areaConectados;
 	private JButton btnCambiarNombre;
@@ -187,7 +194,7 @@ public class ClienteUI extends JFrame {
 			try {
 				String mensaje = textFieldMensaje.getText();
 				textFieldMensaje.setText("");
-				salida.println(nombre + ": " + mensaje);
+				enviaMensaje(mensaje);
 				addTexto(mensaje, true);
 				textFieldMensaje.grabFocus();
 			} catch (Exception e) {
@@ -197,22 +204,24 @@ public class ClienteUI extends JFrame {
 		}
 	}
 
-	private void enviaPaquete(String mens) {
-		while(mens.getBytes().length <= 64) {
-			mens += " ";
-		}
-		mens = mens.substring(0,64);
-		DatagramPacket paquete;
+	private void enviaMensaje(String mensaje) {
+		mensaje = completaString("m:" + nombre + ": " + mensaje);
+		paquete = new DatagramPacket(mensaje.getBytes(), mensaje.getBytes().length, infoServidor, PUERTO);
 		try {
-			paquete = new DatagramPacket(mens.getBytes(), mens.getBytes().length, InetAddress.getByName("192.168.1.255"), PUERTO);
 			conexion.send(paquete);
-		} catch (UnknownHostException e1) {
-			e1.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+		};
 	}
-	
+
+	private String completaString(String mensaje) {
+		while (mensaje.getBytes().length < 64) {
+			mensaje += " ";
+		}
+		mensaje = mensaje.substring(0, 64);
+		return mensaje;
+	}
+
 	private void cambiaNombre() {
 		if (textFieldNombre.getText().isEmpty()) {
 			nombre = "Anonimo";
@@ -247,6 +256,60 @@ public class ClienteUI extends JFrame {
 
 	private void addTexto(String texto, boolean soyYo) {
 		areaMensajes.append(texto + "\n");
+	}
+
+	public String GenerateBroadcastMask(String addr) {
+
+		if (broadcastMask != null)
+			return broadcastMask;
+
+		String localIP = addr;
+
+		int dotPos = localIP.indexOf('.');
+		if (dotPos != -1) {
+
+			String ipStr = localIP.substring(0, dotPos);
+			int ipVal = Integer.valueOf(ipStr).intValue();
+
+			if (ipVal <= 127) {
+
+				// direccion clase A
+
+				broadcastMask = "" + ipVal + ".255.255.255";
+			} else if (ipVal <= 191) {
+
+				// Direccion clase B
+
+				dotPos++;
+				while (localIP.charAt(dotPos) != '.' && dotPos < localIP.length())
+					dotPos++;
+
+				if (dotPos < localIP.length())
+					broadcastMask = localIP.substring(0, dotPos) + ".255.255";
+			} else if (ipVal <= 223) {
+
+				// Direccion clase C
+
+				dotPos++;
+				int dotCnt = 1;
+
+				while (dotCnt < 3 && dotPos < localIP.length()) {
+
+					if (localIP.charAt(dotPos++) == '.')
+						dotCnt++;
+				}
+
+				if (dotPos < localIP.length())
+					broadcastMask = localIP.substring(0, dotPos - 1) + ".255";
+			}
+		}
+
+		if (broadcastMask == null) {
+
+			broadcastMask = "255.255.255.255";
+		}
+
+		return broadcastMask;
 	}
 
 	public static void main(String[] args) {

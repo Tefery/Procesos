@@ -3,14 +3,17 @@ package Practica3UDP;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 public class HiloCliente extends Thread {
 
 	private DatagramSocket conexion;
 	private DatagramPacket paquete;
 	private ClienteUI clienteUI;
+	private String direccion;
 
-	public HiloCliente(DatagramSocket conexion, DatagramPacket paquete, ClienteUI clienteUI) throws IOException {
+	public HiloCliente(DatagramSocket conexion, DatagramPacket paquete, ClienteUI clienteUI, String direccion) throws IOException {
+		this.direccion = direccion;
 		this.conexion = conexion;
 		this.paquete = paquete;
 		this.clienteUI = clienteUI;
@@ -24,7 +27,7 @@ public class HiloCliente extends Thread {
 			while (clienteUI.abierto) {
 				conexion.receive(paquete);
 				mensaje = new String(paquete.getData());
-				if (!paquete.getAddress().equals(conexion.getLocalAddress())) {
+				if (!paquete.getAddress().toString().substring(1).equals(direccion)) {
 					if (!clienteUI.abierto)
 						break;
 					if (mensaje.startsWith("m:")) {
