@@ -33,7 +33,7 @@ public class ClienteUI extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		try {
-			infoServidor = InetAddress.getByName(broadcastMask);
+			infoServidor = InetAddress.getByName(GenerateBroadcastMask(InetAddress.getLocalHost().getHostAddress()));
 		} catch (UnknownHostException e1) {
 			e1.printStackTrace();
 		}
@@ -171,7 +171,7 @@ public class ClienteUI extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private static final int PUERTO = 39876;
-	private String broadcastMask = "255.255.255.255";
+	private String broadcastMask = "192.168.1.255";
 	private InetAddress infoServidor;
 
 	public boolean abierto;
