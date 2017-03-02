@@ -15,6 +15,7 @@ import java.io.PrintStream;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -45,7 +46,6 @@ public class ClienteUI extends JFrame {
 		});
 
 		abierto = true;
-
 		nombre = "Anonimo";
 
 		setTitle("Chat 3000 - Desconectado");
@@ -95,6 +95,7 @@ public class ClienteUI extends JFrame {
 		panelMensajes.setLayout(new BorderLayout(0, 0));
 
 		areaMensajes = new JTextArea();
+		areaMensajes.setFont(new Font("Comic Sans MS", Font.BOLD, 16));
 		areaMensajes.setFocusable(false);
 		areaMensajes.setEnabled(false);
 		areaMensajes.setEditable(false);
@@ -149,13 +150,18 @@ public class ClienteUI extends JFrame {
 		panel.add(panelNombre, BorderLayout.NORTH);
 		panelNombre.setLayout(new BorderLayout(0, 0));
 
+		JPanel panelTextoNombre = new JPanel();
+		panelNombre.add(panelTextoNombre, BorderLayout.NORTH);
+		panelTextoNombre.setLayout(new BorderLayout(0, 0));
+
 		lblNombre = new JLabel("Nombre");
+		panelTextoNombre.add(lblNombre, BorderLayout.NORTH);
 		lblNombre.setEnabled(false);
 		lblNombre.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNombre.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 11));
-		panelNombre.add(lblNombre, BorderLayout.NORTH);
 
 		textFieldNombre = new JTextField();
+		panelTextoNombre.add(textFieldNombre, BorderLayout.SOUTH);
 		textFieldNombre.setHorizontalAlignment(SwingConstants.CENTER);
 		textFieldNombre.setHorizontalAlignment(SwingConstants.CENTER);
 		textFieldNombre.addKeyListener(new KeyAdapter() {
@@ -174,7 +180,6 @@ public class ClienteUI extends JFrame {
 			}
 		});
 		textFieldNombre.setEnabled(false);
-		panelNombre.add(textFieldNombre, BorderLayout.CENTER);
 		textFieldNombre.setColumns(10);
 
 		btnCambiarNombre = new JButton("Cambiar Nombre");
@@ -185,12 +190,17 @@ public class ClienteUI extends JFrame {
 				cambiaNombre();
 			}
 		});
-		panelNombre.add(btnCambiarNombre, BorderLayout.SOUTH);
+		panelNombre.add(btnCambiarNombre, BorderLayout.CENTER);
+
+		lblUsuarios = new JLabel("Usuarios");
+		lblUsuarios.setEnabled(false);
+		lblUsuarios.setHorizontalAlignment(SwingConstants.CENTER);
+		panelNombre.add(lblUsuarios, BorderLayout.SOUTH);
 
 		areaConectados = new JTextArea();
-		areaConectados.setMargin(new Insets(10, 5, 10, 5));
-		areaConectados.setFocusable(false);
 		areaConectados.setEnabled(false);
+		areaConectados.setMargin(new Insets(5, 10, 5, 10));
+		areaConectados.setFocusable(false);
 		areaConectados.setEditable(false);
 
 		JScrollPane scrollConectados = new JScrollPane(areaConectados);
@@ -202,6 +212,7 @@ public class ClienteUI extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private static final int PUERTO = 39876;
+	private HashMap<String, String> conectados;
 
 	private JTextField textFieldMensaje;
 	private JTextField textFieldNombre;
@@ -217,6 +228,7 @@ public class ClienteUI extends JFrame {
 	private JTextArea areaConectados;
 	private JButton btnCambiarNombre;
 	private JLabel lblNombre;
+	private JLabel lblUsuarios;
 
 	private void setEstamosconectados(boolean conectados) {
 		btnEnviarMensaje.setEnabled(conectados);
@@ -226,11 +238,13 @@ public class ClienteUI extends JFrame {
 		textFieldMensaje.setEnabled(conectados);
 		textFieldNombre.setEnabled(conectados);
 		lblNombre.setEnabled(conectados);
+		lblUsuarios.setEnabled(conectados);
 	}
 
 	@SuppressWarnings("deprecation")
 	void conectar() {
 		String host = textFieldHost.getText();
+		conectados = new HashMap<String,String>();
 		if (host.isEmpty()) {
 			textFieldHost.setBackground(Color.RED);
 			textFieldHost.grabFocus();
@@ -247,7 +261,9 @@ public class ClienteUI extends JFrame {
 				setTitle("Chat 3000 - Conectado: " + host);
 				addTexto("Conexion establecida con " + host);
 				setEstamosconectados(true);
+				enviaMensaje("f:" + nombre);
 				textFieldMensaje.grabFocus();
+				new HiloMuerto(this);
 			} catch (UnknownHostException e) {
 				mensajeDeError("El host indicado no existe");
 				textFieldHost.grabFocus();
@@ -260,6 +276,7 @@ public class ClienteUI extends JFrame {
 				textFieldHost.grabFocus();
 			}
 		}
+
 	}
 
 	private void enviaMensaje() {
@@ -267,7 +284,7 @@ public class ClienteUI extends JFrame {
 			try {
 				String mensaje = textFieldMensaje.getText();
 				textFieldMensaje.setText("");
-				salida.println(nombre + ": " + mensaje);
+				salida.println("m:" + nombre + ": " + mensaje);
 				addTexto(mensaje, true);
 				textFieldMensaje.grabFocus();
 			} catch (Exception e) {
@@ -277,6 +294,29 @@ public class ClienteUI extends JFrame {
 		}
 	}
 
+	public void enviaMensaje(String mensaje) {
+		try {
+			salida.println(mensaje);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	void limpiaNombres() {
+		conectados.clear();
+	}
+
+	void listaConectados() {
+		areaConectados.setText("");
+		for (String s : conectados.values())
+			areaConectados.append(s + "\n");
+		areaConectados.repaint();
+	}
+
+	void pideNombres() {
+		enviaMensaje("f:" + nombre);
+	}
+
 	private void cambiaNombre() {
 		if (textFieldNombre.getText().isEmpty()) {
 			nombre = "Anonimo";
@@ -284,6 +324,7 @@ public class ClienteUI extends JFrame {
 			nombre = textFieldNombre.getText();
 		}
 		addTexto("Nombre cambiado a " + nombre, true);
+		enviaNombre();
 		textFieldMensaje.grabFocus();
 	}
 
@@ -302,13 +343,23 @@ public class ClienteUI extends JFrame {
 	}
 
 	private void addTexto(String texto, boolean soyYo) {
-		if (!soyYo)
+		if (!soyYo) {
 			areaMensajes.append(texto + "\n");
-		else
-			areaMensajes.append("\t\t\t"+texto + "\n");
+		} else {
+			areaMensajes.append("\t\t" + texto + "\n");
+		}
 	}
 
 	public static void main(String[] args) {
 		new ClienteUI();
+	}
+
+	public void enviaNombre() {
+		enviaMensaje("n:"+nombre);
+	}
+	
+	synchronized public void guardaNombre(String nombre, String host) {
+		conectados.put(host, nombre);
+		
 	}
 }

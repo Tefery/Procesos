@@ -1,9 +1,9 @@
 package Practica3UDP;
 
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 
 public class HiloCliente extends Thread {
 
@@ -39,11 +39,12 @@ public class HiloCliente extends Thread {
 					} else if (mensaje.startsWith("x:")) {
 						mensaje = mensaje.substring(2);
 						clienteUI.cambiaNombre(mensaje.trim(), null);
+					} else if (mensaje.startsWith("f:")) {
+						clienteUI.enviaNombre();
 					}
 				}
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		conexion.close();

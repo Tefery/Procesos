@@ -27,12 +27,18 @@ public class HiloCliente extends Thread {
 				mensaje = entrada.readLine();
 				if (mensaje == null)
 					break;
-				clienteUI.addTexto(mensaje);
+				else if (mensaje.startsWith("m:"))
+					clienteUI.addTexto(mensaje.substring(2));
+				else if (mensaje.startsWith("f:")) {
+					clienteUI.enviaNombre();
+				} else if (mensaje.startsWith("n:")) {
+					String[] mensaje2 = mensaje.split(":");
+					clienteUI.guardaNombre(mensaje2[2], mensaje2[1]);
+				}
 			}
 			conexion.close();
 		} catch (SocketException e) {
 			clienteUI.servidorCaido("El servidor ha cerrado de manera inesperada");
-			e.printStackTrace();
 		} catch (IOException e) {
 			clienteUI.servidorCaido("Ha ocurrido un error inesperado");
 		}

@@ -19,7 +19,7 @@ public class Servidor extends Thread {
 		this.puerto = puerto;
 		this.ventana = ventana;
 		serv = new ServerSocket(puerto);
-		this.ventana.addText("Escuchando por el puerto "+puerto);
+		this.ventana.addText("Escuchando por el puerto " + puerto);
 		mensaje = "";
 		abierto = true;
 		conexiones = new ArrayList<>();
@@ -28,11 +28,11 @@ public class Servidor extends Thread {
 	@Override
 	public void run() {
 		try {
-			while (abierto) {
+			for (int i = 0; abierto; i++) {
 				conexion = serv.accept();
 				conexiones.add(conexion);
-				ventana.addText("Se han conectado desde "+conexion.getInetAddress());
-				new HiloServidorEscucha(conexion, conexiones, ventana);
+				ventana.addText("Se han conectado desde " + conexion.getInetAddress());
+				new HiloServidorEscucha(conexion, conexiones, ventana, "conexion" + i + ":");
 			}
 			serv.close();
 		} catch (IOException e) {

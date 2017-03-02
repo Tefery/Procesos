@@ -1,5 +1,6 @@
 package Practica3UDP;
 
+
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.Insets;
@@ -7,6 +8,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.BindException;
 import java.net.DatagramPacket;
@@ -30,8 +33,14 @@ import javax.swing.SwingConstants;
 public class ClienteUI extends JFrame {
 
 	public ClienteUI() {
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				informaSalida();
+			}
+		});
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+		
 		try {
 			infoServidor = InetAddress.getByName(GenerateBroadcastMask(InetAddress.getLocalHost().getHostAddress()));
 		} catch (UnknownHostException e1) {
@@ -41,7 +50,7 @@ public class ClienteUI extends JFrame {
 		nombre = "Anonimo";
 		conectados = new HashMap<String, String>();
 		conectar();
-
+		
 		setTitle("Chat 3000 - Conectado");
 		setSize(558, 515);
 
@@ -150,6 +159,22 @@ public class ClienteUI extends JFrame {
 
 		setVisible(true);
 
+		cambiaNombre();
+		addTexto("Conectado en "+broadcastMask);
+		new HombreMuerto(this);
+
+	}
+
+	void pideNombres() {
+		enviaMensaje("f:"+nombre);
+	}
+
+	void limpiaNombres() {
+		conectados.clear();
+	}
+	
+	public void enviaNombre() {
+		enviaMensaje("n:"+nombre);
 	}
 
 	private void conectar() {
@@ -165,16 +190,19 @@ public class ClienteUI extends JFrame {
 			mensajeDeError("ERROR: No ha sido posible establecer la conexión, reinicie la aplicación");
 			System.exit(0);
 		} catch (IOException e) {
+			mensajeDeError("ERROR: Ha ocurrido un error inesperado");
 			e.printStackTrace();
+			System.exit(0);
 		}
 	}
 
 	private static final long serialVersionUID = 1L;
 	private static final int PUERTO = 39876;
-	private String broadcastMask = "192.168.1.255";
+	private String broadcastMask;
 	private InetAddress infoServidor;
 
 	public boolean abierto;
+	@SuppressWarnings("unused")
 	private HiloCliente hiloLector;
 	private DatagramSocket conexion;
 	private DatagramPacket paquete;
@@ -194,7 +222,7 @@ public class ClienteUI extends JFrame {
 			try {
 				String mensaje = textFieldMensaje.getText();
 				textFieldMensaje.setText("");
-				enviaMensaje(mensaje);
+				enviaMensaje("m:" + nombre + ": " + mensaje);
 				addTexto(mensaje, true);
 				textFieldMensaje.grabFocus();
 			} catch (Exception e) {
@@ -205,7 +233,7 @@ public class ClienteUI extends JFrame {
 	}
 
 	private void enviaMensaje(String mensaje) {
-		mensaje = completaString("m:" + nombre + ": " + mensaje);
+		mensaje = completaString(mensaje);
 		paquete = new DatagramPacket(mensaje.getBytes(), mensaje.getBytes().length, infoServidor, PUERTO);
 		try {
 			conexion.send(paquete);
@@ -230,6 +258,7 @@ public class ClienteUI extends JFrame {
 		}
 		addTexto("Nombre cambiado a " + nombre, true);
 		textFieldMensaje.grabFocus();
+		enviaNombre();
 	}
 
 	public void cambiaNombre(String host, String nombre) {
@@ -258,6 +287,10 @@ public class ClienteUI extends JFrame {
 		areaMensajes.append(texto + "\n");
 	}
 
+	public void informaSalida() {
+		enviaMensaje("x:"+conexion.getLocalAddress());
+	}
+	
 	public String GenerateBroadcastMask(String addr) {
 
 		if (broadcastMask != null)
