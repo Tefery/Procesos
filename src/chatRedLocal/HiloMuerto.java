@@ -1,4 +1,4 @@
-package Practica3;
+package chatRedLocal;
 
 public class HiloMuerto extends Thread {
 

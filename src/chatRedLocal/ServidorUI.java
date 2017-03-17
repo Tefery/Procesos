@@ -1,4 +1,4 @@
-package Practica3;
+package chatRedLocal;
 
 import java.awt.BorderLayout;
 

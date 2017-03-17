@@ -1,4 +1,4 @@
-package Practica3UDP;
+package chatRedLocalUDP;
 
 
 import java.io.IOException;

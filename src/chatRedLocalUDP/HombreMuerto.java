@@ -1,4 +1,4 @@
-package Practica3UDP;
+package chatRedLocalUDP;
 
 
 public class HombreMuerto extends Thread{
