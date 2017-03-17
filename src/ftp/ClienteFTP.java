@@ -10,6 +10,7 @@ import java.net.ConnectException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
@@ -63,6 +64,8 @@ public class ClienteFTP {
 
 	private static void descargaArchivo(FTPClient cliente, String rutaDescarga, String rutaArchivo) {
 		try {
+			cliente.setFileType(FTP.BINARY_FILE_TYPE);
+			cliente.enterLocalPassiveMode();
 			cliente.retrieveFile(rutaDescarga, new BufferedOutputStream(new FileOutputStream(rutaArchivo)));
 		} catch (FileNotFoundException e) {
 			System.out.println("El archivo no existe");
