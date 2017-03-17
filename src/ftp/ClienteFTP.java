@@ -29,7 +29,7 @@ public class ClienteFTP {
 				System.err.println(respuesta);
 				System.exit(0);
 			}
-			cliente.login("u750565235", "alumno");
+			cliente.login("u750565235", "lumno");
 			System.out.println(respuesta);
 			cliente.enterLocalPassiveMode();
 			subeArchivo(cliente,"C:\\Users\\Tefery\\Desktop\\libreriasFTP\\jakarta-oro-2.0.1.jar","jakarta.jar",0);

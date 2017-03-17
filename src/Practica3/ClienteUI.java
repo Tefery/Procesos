@@ -198,6 +198,7 @@ public class ClienteUI extends JFrame {
 		panelNombre.add(lblUsuarios, BorderLayout.SOUTH);
 
 		areaConectados = new JTextArea();
+		areaConectados.setFont(new Font("Microsoft YaHei", Font.PLAIN, 13));
 		areaConectados.setEnabled(false);
 		areaConectados.setMargin(new Insets(5, 10, 5, 10));
 		areaConectados.setFocusable(false);
